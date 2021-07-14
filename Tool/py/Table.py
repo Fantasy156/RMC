@@ -5,6 +5,47 @@ from rich.live import Live
 from rich.table import Table
 from rich import box
 
+class Plug(object):
+  def __init__(self, Variable):
+    TABLE_DATA = [["[not italic]:page_facing_up:[/] 0", "返回上级", ]]
+   
+    n = 1
+    for list in Variable:
+      Row = ["[not italic]:printer:[/] %s" % (str(n)), list,]
+      TABLE_DATA.append(Row)
+      n += 1
+      
+    TABLE_DATA.append([" ", " ", " ", " ", ])  
+    TABLE_DATA.append(["[not italic]:computer_disk:[/] 33-安装", "[not italic]:wastebasket:[/] 44-删除", "[not italic]:mobile_phone_off:[/] 88-退出", ])
+    
+    console = Console()
+    table = Table(show_footer=False)
+    table_centered = Align.center(table)
+      
+    with Live(table_centered, console=console, screen=False, refresh_per_second=20):
+        
+        table.box = box.SIMPLE_HEAD
+            
+        table.add_column("序号", justify="center", no_wrap=True)
+    
+        table.add_column("名称", justify="left", no_wrap=True)
+    
+        table.title = (
+                "[not italic]:right_arrow:[/] 固件列表 [not italic]:left_arrow:[/]"
+            )
+            
+        for row in TABLE_DATA:
+            table.add_row(*row)
+    
+        table.columns[0].style = "bright_cyan"
+        table.columns[0].header_style = "bold cyan"
+    
+        table.columns[1].style = "bright_magenta"
+        table.columns[1].header_style = "bold magenta"
+        
+        table.columns[2].style = "bright_red"
+        table.columns[2].header_style = "bold red"
+
 class FirmWare(object):
   def __init__(self, Variable):
     TABLE_DATA = [["[not italic]:page_facing_up:[/] 0", "返回上级", ]]
@@ -77,11 +118,11 @@ class Delete_Project(object):
 
 class New_Project(object):
   def __init__(self, Variable):
-    TABLE_DATA = [["[not italic]:page_facing_up:[/]", "0", "新建工程", "[not italic]:orange_book:[/]", ]]
+    TABLE_DATA = [["[not italic]:page_facing_up:[/] 0", "新建工程", "[not italic]:orange_book:[/]", ]]
    
     n = 1
     for list in Variable:
-      Row = ["[not italic]:printer:[/]", str(n), list, "解压", ]
+      Row = ["[not italic]:printer:[/] %s" % (str(n)), list, "解压", ]
       TABLE_DATA.append(Row)
       n += 1
     
@@ -95,8 +136,6 @@ class New_Project(object):
     with Live(table_centered, console=console, screen=False, refresh_per_second=20):
         
         table.box = box.SIMPLE_HEAD
- 
-        table.add_column("[not italic]:counterclockwise_arrows_button:[/]", justify="center", no_wrap=True)
             
         table.add_column("序号", justify="center", no_wrap=True)
     
@@ -192,6 +231,8 @@ class Tablel(object):
       Delete_Project(Variable)
     elif Complete == "Firmware":
       FirmWare(Variable)
+    elif Complete == "Plug":
+      Plug(Variable)
     
     
     

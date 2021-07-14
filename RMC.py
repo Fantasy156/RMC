@@ -23,7 +23,7 @@ try:
         
 
   class List(object):
-    def __new__(self, Directory, Search, Complete=None, Zip=None):
+    def __new__(self, Directory, Search, Complete=None, Zip=None, Plug=None):
       list = []
       if (Zip):
         for res in Directory.glob(Search):
@@ -37,7 +37,12 @@ try:
           if (Complete):
             all = list.append(str(res))
           else:
-            all = list.append(str(res.name))
+            if (Plug):
+              for ress in Path(res).glob('run.*'):
+                if ress.name == 'run.sh' or ress.name == 'run.py':
+                  all = list.append(str(res.name))
+            else:
+              all = list.append(str(res.name))
         list = sorted(set(list),key=list.index)
         return list
   
@@ -63,6 +68,47 @@ try:
     url = input('    输入<压缩包>直链 >: ')
     download(down, url)
     
+  def Sub(PROJECT):
+    subprocess.call('clear')
+    list = List(Path(str(Path.cwd()) + '/Tool/Sub'), "*", Plug=True)
+    Table.Tablel(list, Complete="Plug")
+    select = input('选择: ')
+    try:
+      float(select)
+    except ValueError:
+      print('输入错误'), time.sleep(0.1)      
+      Sub(PROJECT)
+    if select == '0':
+      Project(PROJECT)
+    elif select == '33':
+      py = str(Path.cwd()) + '/Tool/py/Unpack/Sub.py'
+      subprocess.run([ py + ' ' + str(down)], shell=True)
+      Sub(PROJECT)
+    elif select == '44':
+    
+      select = input('请输入序号进行删除: ')
+      try:
+        float(select)
+      except ValueError:
+        print('输入错误'), time.sleep(0.1)      
+        Sub(PROJECT)
+      if int(qt) >= int(select):
+        qt = 1
+        for res in Path(str(Path.cwd()) + '/Tool/Sub').glob('*'):
+          for ress in Path(res).glob('run.*'):
+            if ress.name == 'run.sh' or ress.name == 'run.py':
+              if select == str(qt):
+                shutil.rmtree(res)
+                Sub(PROJECT)
+              elif int(select) > int(qt):
+                qt = int(qt) + 1
+              else:
+                print('没有此选项'), time.sleep(0.1)
+                Sub(PROJECT)
+      else:
+        print('没有此选项'), time.sleep(0.1)
+        Sub(PROJECT)
+    
   def Project(PROJECT):
     console.clear()
     Table.Tablel(PROJECT, Complete="Project")
@@ -74,7 +120,7 @@ try:
     if select == '00':
       for _ in cycle((None,)): Home()
     elif select == '01':
-      Project(PROJECT)
+      for _ in cycle((None,)): Sub(PROJECT)
     elif select == '02':
       console.clear()
       Unpack(PROJECT, select)

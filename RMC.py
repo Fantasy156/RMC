@@ -6,7 +6,7 @@ from urllib.request import urlopen
 from itertools import cycle
 from rich.console import Console
 sys.path.append('Tool/py/')
-import Table
+import Table, Zip
 from Download import download
 
 try:
@@ -169,8 +169,11 @@ try:
       if select == '0':
         for _ in cycle((None,)): Home()
       elif int(len(list)) >= int(select):
-        PROJECT = str(Path.cwd()) + "/" + str(list[int(select) - 1])
-        Unzip(PROJECT)
+        File = down + "/" + str(list[int(select) - 1])
+        Project = str(Path.cwd()) + '/Error_' + str(Path(File).stem)
+        console.clear()
+        print('\033[1;31m> 解压固件:\n\n\033[1;33m[ %s ] %10s %s\033[0m' % (time.strftime('%H:%M:%S',time.localtime()), brea, Path(File).name))
+        Zip.Unzip(Project, File)
       else:
         print('没有此选项'), time.sleep(0.5)
       

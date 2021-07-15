@@ -63,7 +63,7 @@ try:
       shutil.rmtree(Directory)
       
   def Bye():
-    console.print("\n[i]感谢使用 [ R M C][/i]\n", style="bold bright_magenta", justify="center")
+    console.print("\n[i]感谢使用 [D P A U A][/i]\n", style="bold bright_magenta", justify="center")
     exit()
     
   def Download():

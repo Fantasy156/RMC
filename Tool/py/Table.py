@@ -118,11 +118,11 @@ class Delete_Project(object):
 
 class New_Project(object):
   def __init__(self, Variable):
-    TABLE_DATA = [["[not italic]:page_facing_up:[/] 0", "新建工程", "[not italic]:orange_book:[/]", ]]
+    TABLE_DATA = [["[not italic]:page_facing_up:[/] 0", "新建工程", ]]
    
     n = 1
     for list in Variable:
-      Row = ["[not italic]:printer:[/] %s" % (str(n)), list, "解压", ]
+      Row = ["[not italic]:printer:[/] %s" % (str(n)), list, ]
       TABLE_DATA.append(Row)
       n += 1
     
@@ -139,9 +139,7 @@ class New_Project(object):
             
         table.add_column("序号", justify="center", no_wrap=True)
     
-        table.add_column("名称", justify="left", no_wrap=True)
-    
-        table.add_column("状态", justify="center", no_wrap=True)
+        table.add_column("名称", justify="left", no_wrap=True)    
     
         table.title = (
                 "[not italic]:right_arrow:[/] 项目列表 [not italic]:left_arrow:[/]"
@@ -150,11 +148,11 @@ class New_Project(object):
         for row in TABLE_DATA:
             table.add_row(*row)
         
-        table.columns[2].style = "bright_red"
-        table.columns[2].header_style = "bold red"
+        table.columns[2].style = "chartreuse3"
+        table.columns[2].header_style = "bold chartreuse3"
         
-        table.columns[3].style = "bright_green"
-        table.columns[3].header_style = "bold green"
+        table.columns[3].style = "bright_red"
+        table.columns[3].header_style = "bold red"
     
         table.columns[0].style = "bright_cyan"
         table.columns[0].header_style = "bold cyan"

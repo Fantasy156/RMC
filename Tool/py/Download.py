@@ -50,7 +50,7 @@ class download(object):
     console = Console()
     Except(Directory).Directory()
     if not Except(Url).Url()[0]:
-      return print('\n\033[1;31m%s\033[0m' % (Except(Url).Url()[1])), time.sleep(1)
+      return console.print(Except(Url).Url()[1], style="bold red"), time.sleep(1)    
     Url_size = int(Except(Url).Url()[1])
     Url_file = Path(urlopen(Url).url).name
     Res = Path(str(Directory) + '/' + Url_file)
@@ -59,7 +59,7 @@ class download(object):
       if Url_size != size:
         Path.unlink(Res)
       else:
-        return print('\n\033[1;32m文件已存在\033[0m'), time.sleep(1)
+        return console.print("文件已存在", style="bold red"), time.sleep(1)
         
     
     progress = Progress(
@@ -75,7 +75,7 @@ class download(object):
     )
     
     console.clear()
-    print('\n\033[1;31m> 正在下载固件: \033[0m\n' )
+    console.print("正在下载固件 :\n", style="medium_spring_green")
     with progress:
       response = urlopen(Url)
       task_id = progress.add_task("download", filename=Url_file, start=False)

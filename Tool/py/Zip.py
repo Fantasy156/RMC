@@ -2,9 +2,11 @@
 # -*-coding:utf-8-*-
 import zipfile, tarfile , zipfile, shutil
 from pathlib import Path
+from rich.console import Console
 
 class Unzip(object):
   def __init__(self, PROJECT, FILES):
+    console = Console()
     if Path(PROJECT).is_dir():
       shutil.rmtree(PROJECT)
     result = Path(PROJECT).mkdir(parents=True, exist_ok=True)
@@ -29,4 +31,4 @@ class Unzip(object):
             print(e)
             
     else:
-      print('文件格式不支持或者不是压缩文件')
+      console.print("文件格式不支持或者不是压缩文件", style="bold red")

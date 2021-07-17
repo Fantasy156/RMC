@@ -4,28 +4,39 @@ import zipfile, tarfile , zipfile, shutil
 from pathlib import Path
 from rich.console import Console
 
+class Find(object):
+  def __new__(self, ZIP, Ziplist=None):
+    try :
+      z = zipfile.ZipFile(ZIP, 'r')
+      for filename in z.namelist():
+        for i in Ziplist:
+          if filename == i:
+            return ZIP.stem
+    except Exception as e :
+      pass
+          
 class Unzip(object):
-  def __init__(self, PROJECT, FILES):
+  def __init__(self, Directory, Files):
     console = Console()
-    if Path(PROJECT).is_dir():
-      shutil.rmtree(PROJECT)
-    result = Path(PROJECT).mkdir(parents=True, exist_ok=True)
+    if Path(Directory).is_dir():
+      shutil.rmtree(Directory)
+    result = Path(Directory).mkdir(parents=True, exist_ok=True)
      
-    if 'tar' == FILES.rsplit('.', 2)[1] or FILES.endswith('.tgz') or FILES.endswith('.tar'):
+    if 'tar' == Files.rsplit('.', 2)[1] or Files.endswith('.tgz') or Files.endswith('.tar'):
         try :
-            tar = tarfile.open(FILES)  
+            tar = tarfile.open(Files)  
             names = tar.getnames()   
             for name in names:  
-                tar.extract(name, PROJECT)  
+                tar.extract(name, Directory)  
             tar.close()
         except Exception as e :
             print(e)
             
-    elif FILES.endswith('.zip'):
+    elif Files.endswith('.zip'):
         try :
-            zip_file = zipfile.ZipFile(FILES)  
+            zip_file = zipfile.ZipFile(Files)  
             for names in zip_file.namelist():  
-                zip_file.extract(names, PROJECT)  
+                zip_file.extract(names, Directory)  
             zip_file.close()  
         except Exception as e :
             print(e)

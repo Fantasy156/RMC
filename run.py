@@ -27,13 +27,20 @@ try:
         
 
   class List(object):
-    def __new__(self, Directory, Search, Complete=None, Zip=None, Plug=None):
+    def __new__(self, Directory, Search, Complete=None, Archive=None, ZIp=None, Ziplist=None, Plug=None, File=None, Filelist=None):
       list = []
-      if (Zip):
+      if Archive:
         for res in Directory.glob(Search):
           NA = str(Path(res).suffixes)
-          if 'zip' in NA or 'tgz' in NA or 'tar' in NA:
-            all = list.append(str(res.name))
+          for i in Filelist:
+            if i in NA:
+              all = list.append(str(res.name))
+        list = sorted(set(list),key=list.index)
+        return list
+      elif ZIp:
+        for ZIP in Directory.glob(Search):
+          if Zip.Find(ZIP, Ziplist) != None:
+            all = list.append(str(Zip.Find(ZIP, Ziplist)))
         list = sorted(set(list),key=list.index)
         return list
       else:
@@ -41,10 +48,11 @@ try:
           if Complete:
             all = list.append(str(res))
           else:
-            if (Plug):
-              for ress in Path(res).glob('run.*'):
-                if ress.name == 'run.sh' or ress.name == 'run.py':
-                  all = list.append(str(res.name))
+            if Plug:
+              for ress in Path(res).glob(File):
+                for i in Filelist:
+                  if ress.name == i:
+                    all = list.append(str(res.name))
             else:
               all = list.append(str(res.name))
         list = sorted(set(list),key=list.index)
@@ -63,7 +71,7 @@ try:
       shutil.rmtree(Directory)
       
   def Bye():
-    console.print("\n[i]感谢使用 [D P A U A][/i]\n", style="bold bright_magenta", justify="center")
+    console.print("\n[i]感谢使用 [ R M C][/i]\n", style="bold bright_magenta", justify="center")
     exit()
     
   def Download():
@@ -72,38 +80,49 @@ try:
     url = input('    输入<压缩包>直链 >: ')
     download(down, url)
     
-  def Sub(PROJECT):
+  def In_Plug(PROJECT):
     subprocess.call('clear')
-    list = List(Path(str(Path.cwd()) + '/Tool/Sub'), "*", Plug=True)
+    list = List(Path(down), "*.zip", ZIp=True, Ziplist=['run.py', 'run.sh'])
     Table.Tablel(list, Complete="Plug")
     select = input('选择: ')
     if Except(select).Select()[1] == True:
       if select == '0':
-        Project(PROJECT)
+        for _ in cycle((None,)): Sub(PROJECT)
+      elif select == '88':
+        Bye()
+      elif int(len(list)) >= int(select):
+        select = input('\033[1;31m[ ' + time.strftime('%H:%M:%S',time.localtime()) + ' ]         是否安装: ' + str(list[int(select) - 1]) + ' 插件 ? [1]: \033[0m')
+        if Except(select).Select()[1] == True:
+          if select == '1':
+            Project = str(Path.cwd()) + '/Tool/Sub/' + str(list[int(select) - 1])
+            File = down + "/" + str(list[int(select) - 1]) + ".zip"
+            Zip.Unzip(Project, File)
+            print('\033[1;31m[ ' + time.strftime('%H:%M:%S',time.localtime()) + ' ]         安装完成\033[0m')
+      else:
+        console.print("\n 没有次选项\n", style="bold red"), time.sleep(0.5)
+    
+    
+  def Sub(PROJECT):
+    subprocess.call('clear')
+    list = List(Path(str(Path.cwd()) + '/Tool/Sub'), "*", Plug=True, File="run.*", Filelist=['run.sh', 'run.py'])
+    Table.Tablel(list, Complete="Plug")
+    select = input('选择: ')
+    if Except(select).Select()[1] == True:
+      if select == '0':
+        for _ in cycle((None,)): Project(PROJECT)
       elif select == '33':
-        py = str(Path.cwd()) + '/Tool/py/Unpack/Sub.py'
-        subprocess.run([ py + ' ' + str(down)], shell=True)
-        Sub(PROJECT)
+        for _ in cycle((None,)): In_Plug(PROJECT)
       elif select == '44':
-      
         select = input('请输入序号进行删除: ')
         if Except(select).Select()[1] == True:
-          if int(qt) >= int(select):
-            qt = 1
-            for res in Path(str(Path.cwd()) + '/Tool/Sub').glob('*'):
-              for ress in Path(res).glob('run.*'):
-                if ress.name == 'run.sh' or ress.name == 'run.py':
-                  if select == str(qt):
-                    shutil.rmtree(res)
-                    Sub(PROJECT)
-                  elif int(select) > int(qt):
-                    qt = int(qt) + 1
-                  else:
-                    console.print("\n 没有此选项\n", style="bold red"), time.sleep(0.5)
-                    Sub(PROJECT)
-        else:
-          console.print("\n 没有此选项\n", style="bold red"), time.sleep(0.5)
-          Sub(PROJECT)
+          if int(len(list)) >= int(select):       
+            Delete(str(Path.cwd()) + '/Tool/Sub' + "/" + str(list[int(select) - 1]))
+          else:
+            console.print("\n 没有此选项\n", style="bold red"), time.sleep(0.5)
+      elif select == '88':
+        Bye()
+      else:
+        console.print("\n 没有此选项\n", style="bold red"), time.sleep(0.5)
     
   def Project(PROJECT):
     console.clear()
@@ -115,26 +134,26 @@ try:
       elif select == '01':
         for _ in cycle((None,)): Sub(PROJECT)
       elif select == '02':
-        console.clear()
+        pass
         Unpack(PROJECT, select)
       elif select == '03':
         console.clear()
-        Unpack(PROJECT, select)
+        pass
       elif select == '04':
         console.clear()
-        Unpack(PROJECT, select)
+        pass
       elif select == '05':
-        Sub(PROJECT)
+        pass
       elif select == '06':
-        Pack(PROJECT, select)
+        pass
       elif select == '07':
-        Pack(PROJECT, select)
+        pass
       elif select == '08':
-        Pack(PROJECT, select)
+        pass
       elif select == '09':
-        Zip(PROJECT)
+        pass
       elif select == '77':
-        Other(PROJECT)
+        pass
       elif select == '88':
         Bye()
       else:
@@ -155,7 +174,7 @@ try:
         
   def Select():
     subprocess.call('clear')
-    list = List(Path(down), "*", Zip=True)
+    list = List(Path(down), "*", Archive=True, Filelist=['zip', 'tgz', 'tar'])
     Table.Tablel(list, Complete="Firmware")
     select = input('> 选择: ')
     if Except(select).Select()[1] == True:
@@ -220,6 +239,9 @@ try:
       if Path('Tool/aarch64').is_dir():
         Binary = str(Path.cwd()) + '/Tool/aarch64/'
         down = List(Path('/'), '**/sdcard/download', Complete=True)[0]
+        if not Path(down).is_dir():
+          Path(str(Path.cwd()) + '/Download').mkdir(mode=0o777, exist_ok=True)
+          down = str(Path.cwd()) + '/Download'
       else:
         console.clear()
         console.print("\n aarch64文件夹丢失 ...\n", style="bold red")

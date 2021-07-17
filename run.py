@@ -27,7 +27,7 @@ try:
         
 
   class List(object):
-    def __new__(self, Directory, Search, Complete=None, Archive=None, ZIp=None, Ziplist=None, Plug=None, File=None, Filelist=None):
+    def __new__(self, Directory, Search, Complete=None, Archive=None, ZIp=None, Ziplist=None, Plug=None, File=None, Filelist=None, Files=None):
       list = []
       if Archive:
         for res in Directory.glob(Search):
@@ -43,6 +43,11 @@ try:
             all = list.append(str(Zip.Find(ZIP, Ziplist)))
         list = sorted(set(list),key=list.index)
         return list
+      elif Files:
+        for res in Directory.glob(Search):
+          for i in Filelist:
+            if res.name == i:
+              return res
       else:
         for res in Directory.glob(Search):
           if Complete:
@@ -115,12 +120,16 @@ try:
       elif select == '44':
         select = input('请输入序号进行删除: ')
         if Except(select).Select()[1] == True:
-          if int(len(list)) >= int(select):       
+          if int(len(list)) >= int(select):
             Delete(str(Path.cwd()) + '/Tool/Sub' + "/" + str(list[int(select) - 1]))
           else:
             console.print("\n 没有此选项\n", style="bold red"), time.sleep(0.5)
       elif select == '88':
         Bye()
+      if int(len(list)) >= int(select):
+        Plug = List(Path(str(Path.cwd()) + '/Tool/Sub' + "/" + str(list[int(select) - 1])), "*", Filelist=['run.sh', 'run.py'], Files=True)
+        Path(Plug).chmod(0o777)
+        subprocess.run([str(Plug) + ' ' + str(PROJECT)], shell=True)
       else:
         console.print("\n 没有此选项\n", style="bold red"), time.sleep(0.5)
     

@@ -86,15 +86,15 @@ try:
     download(down, url)
     
   def In_Plug(PROJECT):
-    subprocess.call('clear')
+    console.clear()
     list = List(Path(down), "*.zip", ZIp=True, Ziplist=['run.py', 'run.sh'])
-    Table.Tablel(list, Complete="Plug")
+    Style = ['bright_cyan', 'bright_magenta']
+    Header_Style = ['bold cyan', 'bold magenta']
+    Table.Tablel(list, Header='可安装插件列表', Other='返回上级', Style=Style, Options=Options, Header_Style=Header_Style)
     select = input('选择: ')
     if Except(select).Select()[1] == True:
       if select == '0':
         for _ in cycle((None,)): Sub(PROJECT)
-      elif select == '88':
-        Bye()
       elif int(len(list)) >= int(select):
         select = input('\033[1;31m[ ' + time.strftime('%H:%M:%S',time.localtime()) + ' ]         是否安装: ' + str(list[int(select) - 1]) + ' 插件 ? [1]: \033[0m')
         if Except(select).Select()[1] == True:
@@ -108,9 +108,12 @@ try:
     
     
   def Sub(PROJECT):
-    subprocess.call('clear')
+    console.clear()
     list = List(Path(str(Path.cwd()) + '/Tool/Sub'), "*", Plug=True, File="run.*", Filelist=['run.sh', 'run.py'])
-    Table.Tablel(list, Complete="Plug")
+    Options = [" 33-安装", " 44-删除", " 88-退出" ]
+    Style = ['bright_cyan', 'bright_magenta', 'bright_red']
+    Header_Style = ['bold cyan', 'bold magenta', 'bold red']
+    Table.Tablel(list, Header='插件列表', Other='返回上级', Style=Style, Options=Options, Header_Style=Header_Style)
     select = input('选择: ')
     if Except(select).Select()[1] == True:
       if select == '0':
@@ -118,6 +121,10 @@ try:
       elif select == '33':
         for _ in cycle((None,)): In_Plug(PROJECT)
       elif select == '44':
+        console.clear()
+        Style = ['bright_cyan', 'bright_magenta']
+        Header_Style = ['bold cyan', 'bold magenta']
+        Table.Tablel(list, Header='插件列表', Style=Style, Header_Style=Header_Style)
         select = input('请输入序号进行删除: ')
         if Except(select).Select()[1] == True:
           if int(len(list)) >= int(select):
@@ -126,7 +133,7 @@ try:
             console.print("\n 没有此选项\n", style="bold red"), time.sleep(0.5)
       elif select == '88':
         Bye()
-      if int(len(list)) >= int(select):
+      elif int(len(list)) >= int(select):
         Plug = List(Path(str(Path.cwd()) + '/Tool/Sub' + "/" + str(list[int(select) - 1])), "*", Filelist=['run.sh', 'run.py'], Files=True)
         Path(Plug).chmod(0o777)
         subprocess.run([str(Plug) + ' ' + str(PROJECT)], shell=True)
@@ -135,7 +142,7 @@ try:
     
   def Project(PROJECT):
     console.clear()
-    Table.Tablel(PROJECT, Complete="Project")
+    Table.Project(PROJECT)
     select = input('请输入序列号: ')
     if Except(select, Complete=True).Select()[1] == True:
       if select == '00':
@@ -171,7 +178,9 @@ try:
   def Delete_project():
     console.clear()
     list = List(Path.cwd(), "Error_*")
-    Table.Tablel(list, Complete="Delete_project")
+    Style = ['bright_cyan', 'bright_magenta']
+    Header_Style = ['bold cyan', 'bold magenta']
+    Table.Tablel(list, Header='项目列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
     select = input('请输入序号进行删除: ')
     if Except(select).Select()[1] == True:
       if select == '0':
@@ -184,7 +193,9 @@ try:
   def Select():
     subprocess.call('clear')
     list = List(Path(down), "*", Archive=True, Filelist=['zip', 'tgz', 'tar'])
-    Table.Tablel(list, Complete="Firmware")
+    Style = ['bright_cyan', 'bright_magenta']
+    Header_Style = ['bold cyan', 'bold magenta']
+    Table.Tablel(list, Header='可解压压缩包列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
     select = input('> 选择: ')
     if Except(select).Select()[1] == True:
       if select == '0':
@@ -202,7 +213,10 @@ try:
   def Home():
     console.clear()
     list = List(Path.cwd(), "Error_*")
-    Table.Tablel(list, Complete="New_project")
+    Options = [" 33-解压", " 44-删除", " 66-下载", " 88-退出" ]
+    Style = ['bright_cyan', 'bright_magenta', 'chartreuse3', 'bright_red']
+    Header_Style = ['bold cyan', 'bold magenta']
+    Table.Tablel(list, Header='项目列表', Other='新建工程', Options=Options, Style=Style, Header_Style=Header_Style)
     select = input('> 选择: ')
     if Except(select).Select()[1] == True:
       if select == '0':

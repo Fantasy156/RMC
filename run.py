@@ -25,43 +25,42 @@ try:
       except ValueError:
         return console.print("\n输入错误\n", style="bold red"), time.sleep(0.5)
         
-
-  class List(object):
-    def __new__(self, Directory, Search, Complete=None, Archive=None, ZIp=None, Ziplist=None, Plug=None, File=None, Filelist=None, Files=None):
-      list = []
-      if Archive:
-        for res in Directory.glob(Search):
-          NA = str(Path(res).suffixes)
-          for i in Filelist:
-            if i in NA:
-              all = list.append(str(res.name))
-        list = sorted(set(list),key=list.index)
-        return list
-      elif ZIp:
-        for ZIP in Directory.glob(Search):
-          if Zip.Find(ZIP, Ziplist) != None:
-            all = list.append(str(Zip.Find(ZIP, Ziplist)))
-        list = sorted(set(list),key=list.index)
-        return list
-      elif Files:
-        for res in Directory.glob(Search):
-          for i in Filelist:
+  class Directory_Path(object):
+    def __new__(self, Directory, Search, Files=None):
+      for res in Directory.glob(Search):
+        if Files:
+          for i in Files:
             if res.name == i:
               return res
-      else:
-        for res in Directory.glob(Search):
-          if Complete:
-            all = list.append(str(res))
+        else:
+          return res
+
+  class List(object):
+    def __new__(self, Directory, Search, File=None, Filelist=None, Ziplist=None):
+      list = []
+      for res in Directory.glob(Search):
+        if Filelist:
+          if File:
+            for ress in Path(res).glob(File):
+              for i in Filelist:
+                if ress.name == i:
+                  all = list.append(str(res.name))
           else:
-            if Plug:
-              for ress in Path(res).glob(File):
-                for i in Filelist:
-                  if ress.name == i:
-                    all = list.append(str(res.name))
-            else:
-              all = list.append(str(res.name))
-        list = sorted(set(list),key=list.index)
-        return list
+            for i in Filelist:
+              try:
+                if i == str(Path(res).name).rsplit('.', 1)[1]:
+                  list.append(str(res.name))
+                elif 'tar' == str(Path(res).name).rsplit('.', 2)[1]:
+                  list.append(str(res.name))
+              except IndexError:
+                pass
+        elif Ziplist:
+          if Zip.Find(res, Ziplist) != None:
+            list.append(str(Zip.Find(res, Ziplist)))
+        else:
+          list.append(str(res.name))
+      list = sorted(set(list),key=list.index)
+      return list
   
   class Mkdir(object):
     def __new__(self, Directory):
@@ -87,10 +86,10 @@ try:
     
   def In_Plug(PROJECT):
     console.clear()
-    list = List(Path(down), "*.zip", ZIp=True, Ziplist=['run.py', 'run.sh'])
+    list = List(Path(down), "*.zip", Ziplist=['run.py', 'run.sh'])
     Style = ['bright_cyan', 'bright_magenta']
     Header_Style = ['bold cyan', 'bold magenta']
-    Table.Tablel(list, Header='可安装插件列表', Other='返回上级', Style=Style, Options=Options, Header_Style=Header_Style)
+    Table.Tablel(list, Header='可安装插件列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
     select = input('选择: ')
     if Except(select).Select()[1] == True:
       if select == '0':
@@ -109,7 +108,7 @@ try:
     
   def Sub(PROJECT):
     console.clear()
-    list = List(Path(str(Path.cwd()) + '/Tool/Sub'), "*", Plug=True, File="run.*", Filelist=['run.sh', 'run.py'])
+    list = List(Path(str(Path.cwd()) + '/Tool/Sub'), "*", File=("run.*"), Filelist=['run.sh', 'run.py'])
     Options = [" 33-安装", " 44-删除", " 88-退出" ]
     Style = ['bright_cyan', 'bright_magenta', 'bright_red']
     Header_Style = ['bold cyan', 'bold magenta', 'bold red']
@@ -134,7 +133,7 @@ try:
       elif select == '88':
         Bye()
       elif int(len(list)) >= int(select):
-        Plug = List(Path(str(Path.cwd()) + '/Tool/Sub' + "/" + str(list[int(select) - 1])), "*", Filelist=['run.sh', 'run.py'], Files=True)
+        Plug = Directory_Path(Path(str(Path.cwd()) + '/Tool/Sub' + "/" + str(list[int(select) - 1])), "*", Files=['run.sh', 'run.py'])
         Path(Plug).chmod(0o777)
         subprocess.run([str(Plug) + ' ' + str(PROJECT)], shell=True)
       else:
@@ -192,7 +191,7 @@ try:
         
   def Select():
     subprocess.call('clear')
-    list = List(Path(down), "*", Archive=True, Filelist=['zip', 'tgz', 'tar'])
+    list = List(Path(down), "*", Filelist=['zip', 'tgz', 'tar'])
     Style = ['bright_cyan', 'bright_magenta']
     Header_Style = ['bold cyan', 'bold magenta']
     Table.Tablel(list, Header='可解压压缩包列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
@@ -261,7 +260,7 @@ try:
     elif platform.machine() == 'aarch64' or platform.machine() == 'armv8l' :
       if Path('Tool/aarch64').is_dir():
         Binary = str(Path.cwd()) + '/Tool/aarch64/'
-        down = List(Path('/'), '**/sdcard/download', Complete=True)[0]
+        down = Directory_Path(Path('/'), '**/sdcard/download')
         if not Path(down).is_dir():
           Path(str(Path.cwd()) + '/Download').mkdir(mode=0o777, exist_ok=True)
           down = str(Path.cwd()) + '/Download'

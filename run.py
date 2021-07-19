@@ -8,6 +8,7 @@ from rich.console import Console
 sys.path.append('Tool/py/')
 import Table, Zip
 from Download import download
+from Unpack import Decompress
 
 try:
 
@@ -26,12 +27,14 @@ try:
         return console.print("\n输入错误\n", style="bold red"), time.sleep(0.5)
         
   class Directory_Path(object):
-    def __new__(self, Directory, Search, Files=None):
+    def __new__(self, Directory, Search, Files=None, Unpack=None):
       for res in Directory.glob(Search):
         if Files:
           for i in Files:
             if res.name == i:
               return str(res)
+        elif Unpack:
+          Decompress(res, Unpack=Unpack)
         else:
           return str(res)
 
@@ -158,7 +161,8 @@ try:
         pass
       elif select == '04':
         console.clear()
-        pass
+        Directory_Path(Path(PROJECT), "*.br", Unpack='br')
+        input('请输入序号进行删除: ')
       elif select == '05':
         pass
       elif select == '06':

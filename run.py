@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
-import time, platform, subprocess, shutil, sys
+import time, platform, subprocess, shutil, sys, re
 from pathlib import Path, PurePath
 from urllib.request import urlopen
 from itertools import cycle
@@ -19,7 +19,7 @@ try:
       try:
         float(self.Variable)
         if not self.Complete:
-          if self.Variable != "0" and int(self.Variable) * 1 == 0:
+          if self.Variable != "0" and re.search('^0[0-9]+$', self.Variable):
             return console.print("\n输入错误\n", style="bold red"), time.sleep(0.5)
         return self.Variable, True
       except ValueError:
@@ -31,9 +31,9 @@ try:
         if Files:
           for i in Files:
             if res.name == i:
-              return res
+              return str(res)
         else:
-          return res
+          return str(res)
 
   class List(object):
     def __new__(self, Directory, Search, File=None, Filelist=None, Ziplist=None):
@@ -123,9 +123,11 @@ try:
         console.clear()
         Style = ['bright_cyan', 'bright_magenta']
         Header_Style = ['bold cyan', 'bold magenta']
-        Table.Tablel(list, Header='插件列表', Style=Style, Header_Style=Header_Style)
+        Table.Tablel(list, Header='插件列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
         select = input('请输入序号进行删除: ')
         if Except(select).Select()[1] == True:
+          if select == '0':
+            for _ in cycle((None,)): Sub(PROJECT)
           if int(len(list)) >= int(select):
             Delete(str(Path.cwd()) + '/Tool/Sub' + "/" + str(list[int(select) - 1]))
           else:

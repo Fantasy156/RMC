@@ -162,11 +162,11 @@ try:
       elif select == '04':
         console.clear()
         Directory_Path(Path(PROJECT), "*.br", Unpack='br')
-        input('请输入序号进行删除: ')
       elif select == '05':
         pass
       elif select == '06':
-        pass
+        console.clear()
+        Directory_Path(Path(PROJECT), "*.new.dat", Unpack='dat')
       elif select == '07':
         pass
       elif select == '08':

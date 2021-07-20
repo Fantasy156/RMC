@@ -13,6 +13,7 @@ class Tablel(object):
     n = 1
     for list in Variable:
       Row = [" %s" % (str(n)), list, ]
+      TABLE_DATA.append([" ",])
       TABLE_DATA.append(Row)
       n += 1
     

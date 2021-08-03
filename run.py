@@ -1,81 +1,14 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
-import time, platform, subprocess, shutil, sys, re
-from pathlib import Path, PurePath
-from urllib.request import urlopen
+import platform, subprocess
 from itertools import cycle
-from rich.console import Console
-sys.path.append('Tool/py/')
-import Table, Zip
-from Download import download
-from Unpack import Decompress
+from Tool import Zip, Path, Console, sleep, strftime, localtime, shutil, Unpack
+from Tool.Download import download
+from Tool.Table import Tablel, Tables
+from Tool.Utility import Except, Directory_Path, List, Mkdir, Delete
+
 
 try:
-
-  class Except(object):
-    def __init__(self, Variable, Complete=None):
-      self.Variable = Variable
-      self.Complete = Complete
-    def Select(self):
-      try:
-        float(self.Variable)
-        if not self.Complete:
-          if self.Variable != "0" and re.search('^0[0-9]+$', self.Variable):
-            return console.print("\n输入错误\n", style="bold red"), time.sleep(0.5)
-        return self.Variable, True
-      except ValueError:
-        return console.print("\n输入错误\n", style="bold red"), time.sleep(0.5)
-        
-  class Directory_Path(object):
-    def __new__(self, Directory, Search, Files=None, Unpack=None):
-      for res in Directory.glob(Search):
-        if Files:
-          for i in Files:
-            if res.name == i:
-              return str(res)
-        elif Unpack:
-          Decompress(res, Unpack=Unpack)
-        else:
-          return str(res)
-
-  class List(object):
-    def __new__(self, Directory, Search, File=None, Filelist=None, Ziplist=None):
-      list = []
-      for res in Directory.glob(Search):
-        if Filelist:
-          if File:
-            for ress in Path(res).glob(File):
-              for i in Filelist:
-                if ress.name == i:
-                  all = list.append(str(res.name))
-          else:
-            for i in Filelist:
-              try:
-                if i == str(Path(res).name).rsplit('.', 1)[1]:
-                  list.append(str(res.name))
-                elif 'tar' == str(Path(res).name).rsplit('.', 2)[1]:
-                  list.append(str(res.name))
-              except IndexError:
-                pass
-        elif Ziplist:
-          if Zip.Find(res, Ziplist) != None:
-            list.append(str(Zip.Find(res, Ziplist)))
-        else:
-          list.append(str(res.name))
-      list = sorted(set(list),key=list.index)
-      return list
-  
-  class Mkdir(object):
-    def __new__(self, Directory):
-      if  not Path(Directory).is_dir():
-        Path(Directory).mkdir(mode=0o777, exist_ok=True)
-        return ''
-      else:
-        return '创建失败'
-        
-  class Delete(object):
-    def __new__(self, Directory):
-      shutil.rmtree(Directory)
       
   def Bye():
     console.print("\n[i]感谢使用 [ R M C][/i]\n", style="bold bright_magenta", justify="center")
@@ -92,30 +25,30 @@ try:
     list = List(Path(down), "*.zip", Ziplist=['run.py', 'run.sh'])
     Style = ['bright_cyan', 'bright_magenta']
     Header_Style = ['bold cyan', 'bold magenta']
-    Table.Tablel(list, Header='可安装插件列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
+    Tablel(list, Header='可安装插件列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
     select = input('选择: ')
     if Except(select).Select()[1] == True:
       if select == '0':
         for _ in cycle((None,)): Sub(PROJECT)
       elif int(len(list)) >= int(select):
-        select = input('\033[1;31m[ ' + time.strftime('%H:%M:%S',time.localtime()) + ' ]         是否安装: ' + str(list[int(select) - 1]) + ' 插件 ? [1]: \033[0m')
+        select = input('\033[1;31m[ ' + strftime('%H:%M:%S',localtime()) + ' ]         是否安装: ' + str(list[int(select) - 1]) + ' 插件 ? [1]: \033[0m')
         if Except(select).Select()[1] == True:
           if select == '1':
-            Project = str(Path.cwd()) + '/Tool/Sub/' + str(list[int(select) - 1])
+            Project = str(Path.cwd()) + '/Sub/' + str(list[int(select) - 1])
             File = down + "/" + str(list[int(select) - 1]) + ".zip"
             Zip.Unzip(Project, File)
-            print('\033[1;31m[ ' + time.strftime('%H:%M:%S',time.localtime()) + ' ]         安装完成\033[0m')
+            print('\033[1;31m[ ' + strftime('%H:%M:%S',localtime()) + ' ]         安装完成\033[0m')
       else:
-        console.print("\n 没有次选项\n", style="bold red"), time.sleep(0.5)
+        console.print("\n 没有次选项\n", style="bold red"), sleep(0.5)
     
     
   def Sub(PROJECT):
     console.clear()
-    list = List(Path(str(Path.cwd()) + '/Tool/Sub'), "*", File=("run.*"), Filelist=['run.sh', 'run.py'])
+    list = List(Path(str(Path.cwd()) + '/Sub'), "*", File=("run.*"), Filelist=['run.sh', 'run.py'])
     Options = [" 33-安装", " 44-删除", " 88-退出" ]
     Style = ['bright_cyan', 'bright_magenta', 'bright_red']
     Header_Style = ['bold cyan', 'bold magenta', 'bold red']
-    Table.Tablel(list, Header='插件列表', Other='返回上级', Style=Style, Options=Options, Header_Style=Header_Style)
+    Tablel(list, Header='插件列表', Other='返回上级', Style=Style, Options=Options, Header_Style=Header_Style)
     select = input('选择: ')
     if Except(select).Select()[1] == True:
       if select == '0':
@@ -126,27 +59,27 @@ try:
         console.clear()
         Style = ['bright_cyan', 'bright_magenta']
         Header_Style = ['bold cyan', 'bold magenta']
-        Table.Tablel(list, Header='插件列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
+        Tablel(list, Header='插件列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
         select = input('请输入序号进行删除: ')
         if Except(select).Select()[1] == True:
           if select == '0':
             for _ in cycle((None,)): Sub(PROJECT)
           if int(len(list)) >= int(select):
-            Delete(str(Path.cwd()) + '/Tool/Sub' + "/" + str(list[int(select) - 1]))
+            Delete(str(Path.cwd()) + '/Sub' + "/" + str(list[int(select) - 1]))
           else:
-            console.print("\n 没有此选项\n", style="bold red"), time.sleep(0.5)
+            console.print("\n 没有此选项\n", style="bold red"), sleep(0.5)
       elif select == '88':
         Bye()
       elif int(len(list)) >= int(select):
-        Plug = Directory_Path(Path(str(Path.cwd()) + '/Tool/Sub' + "/" + str(list[int(select) - 1])), "*", Files=['run.sh', 'run.py'])
+        Plug = Directory_Path(Path(str(Path.cwd()) + '/Sub' + "/" + str(list[int(select) - 1])), "*", Files=['run.sh', 'run.py'])[0]
         Path(Plug).chmod(0o777)
         subprocess.run([str(Plug) + ' ' + str(PROJECT)], shell=True)
       else:
-        console.print("\n 没有此选项\n", style="bold red"), time.sleep(0.5)
+        console.print("\n 没有此选项\n", style="bold red"), sleep(0.5)
     
   def Project(PROJECT):
     console.clear()
-    Table.Project(PROJECT)
+    Tables(PROJECT)
     select = input('请输入序列号: ')
     if Except(select, Complete=True).Select()[1] == True:
       if select == '00':
@@ -161,12 +94,12 @@ try:
         pass
       elif select == '04':
         console.clear()
-        Directory_Path(Path(PROJECT), "*.br", Unpack='br')
+        Unpack(name='br', PROJECT=PROJECT)
       elif select == '05':
         pass
       elif select == '06':
         console.clear()
-        Directory_Path(Path(PROJECT), "*.new.dat", Unpack='dat')
+        Unpack(name='dat', PROJECT=PROJECT)
       elif select == '07':
         pass
       elif select == '08':
@@ -178,14 +111,14 @@ try:
       elif select == '88':
         Bye()
       else:
-        console.print("\n 没有此选项\n", style="bold red"), time.sleep(0.5)
+        console.print("\n 没有此选项\n", style="bold red"), sleep(0.5)
       
   def Delete_project():
     console.clear()
     list = List(Path.cwd(), "Error_*")
     Style = ['bright_cyan', 'bright_magenta']
     Header_Style = ['bold cyan', 'bold magenta']
-    Table.Tablel(list, Header='项目列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
+    Tablel(list, Header='项目列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
     select = input('请输入序号进行删除: ')
     if Except(select).Select()[1] == True:
       if select == '0':
@@ -193,14 +126,14 @@ try:
       elif int(len(list)) >= int(select):
         Delete(str(Path.cwd()) + "/" + str(list[int(select) - 1]))
       else:
-        console.print("\n 没有次选项\n", style="bold red"), time.sleep(0.5)
+        console.print("\n 没有次选项\n", style="bold red"), sleep(0.5)
         
   def Select():
     subprocess.call('clear')
     list = List(Path(down), "*", Filelist=['zip', 'tgz', 'tar'])
     Style = ['bright_cyan', 'bright_magenta']
     Header_Style = ['bold cyan', 'bold magenta']
-    Table.Tablel(list, Header='可解压压缩包列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
+    Tablel(list, Header='可解压压缩包列表', Other='返回上级', Style=Style, Header_Style=Header_Style)
     select = input('> 选择: ')
     if Except(select).Select()[1] == True:
       if select == '0':
@@ -209,10 +142,10 @@ try:
         File = down + "/" + str(list[int(select) - 1])
         Project = str(Path.cwd()) + '/Error_' + str(Path(File).stem)
         console.clear()
-        console.print('[bold red]解压固件 >[/bold red]\n\n[ %s ] %10s %s' % (time.strftime('%H:%M:%S',time.localtime()), brea, Path(File).name), style="bold cyan")
+        console.print('[bold red]解压固件 >[/bold red]\n\n[ %s ] %10s %s' % (strftime('%H:%M:%S',localtime()), brea, Path(File).name), style="bold cyan")
         Zip.Unzip(Project, File)
       else:
-        console.print("\n没有此选项\n", style="bold red"), time.sleep(0.5)
+        console.print("\n没有此选项\n", style="bold red"), sleep(0.5)
       
     
   def Home():
@@ -221,7 +154,7 @@ try:
     Options = [" 33-解压", " 44-删除", " 66-下载", " 88-退出" ]
     Style = ['bright_cyan', 'bright_magenta', 'chartreuse3', 'bright_red']
     Header_Style = ['bold cyan', 'bold magenta']
-    Table.Tablel(list, Header='项目列表', Other='新建工程', Options=Options, Style=Style, Header_Style=Header_Style)
+    Tablel(list, Header='项目列表', Other='新建工程', Options=Options, Style=Style, Header_Style=Header_Style)
     select = input('> 选择: ')
     if Except(select).Select()[1] == True:
       if select == '0':
@@ -242,7 +175,11 @@ try:
         PROJECT = str(Path.cwd()) + "/" + str(list[int(select) - 1])
         for _ in cycle((None,)): Project(PROJECT)
       else:
-        console.print("\n 没有此选项\n", style="bold red"), time.sleep(0.5)
+        console.print("\n 没有此选项\n", style="bold red"), sleep(0.5)
+
+
+
+
   console = Console()
   console.clear()
   console.print("\n正在初始化", style="bold chartreuse3")
@@ -266,7 +203,7 @@ try:
     elif platform.machine() == 'aarch64' or platform.machine() == 'armv8l' :
       if Path('Tool/aarch64').is_dir():
         Binary = str(Path.cwd()) + '/Tool/aarch64/'
-        down = Directory_Path(Path('/'), '**/sdcard/download')
+        down = Directory_Path(Path('/'), '**/sdcard/download')[0]
         if not Path(down).is_dir():
           Path(str(Path.cwd()) + '/Download').mkdir(mode=0o777, exist_ok=True)
           down = str(Path.cwd()) + '/Download'
@@ -284,7 +221,7 @@ try:
     console.clear()
     console.print("\n Tool文件夹丢失 ...\n", style="bold red")
     exit()    
-  time.sleep(0.5)
+  sleep(0.5)
  
   for _ in cycle((None,)): Home()
 except KeyboardInterrupt:

@@ -8,13 +8,20 @@ from Tool import Console
 
 console = Console()
 
-class Tablel(object):
+class tabulation(object):
   def __init__(self, Variable, Header=None, Other=None, Options=None, Style=None, Header_Style=None):
-    if Other:
-      TABLE_DATA = [[" 0", "%s" % (Other), ]]
+    self.Variable = Variable
+    self.Header = Header
+    self.Other = Other
+    self.Options = Options
+    self.Style = Style
+    self.Header_Style = Header_Style
+  def Tablel(self):
+    if self.Other:
+      TABLE_DATA = [[" 0", "%s" % (self.Other), ]]
    
     n = 1
-    for list in Variable:
+    for list in self.Variable:
       Row = [" %s" % (str(n)), list, ]
       TABLE_DATA.append([" ",])
       TABLE_DATA.append(Row)
@@ -22,8 +29,8 @@ class Tablel(object):
     
     TABLE_DATA.append([" ",])
     
-    if Options:
-      TABLE_DATA.append(Options)
+    if self.Options:
+      TABLE_DATA.append(self.Options)
       
     table = Table(show_footer=False)
     table_centered = Align.center(table)
@@ -36,26 +43,25 @@ class Tablel(object):
     
       table.add_column("名称", justify="left", no_wrap=True)    
     
-      table.title = (" %s " % (Header))
+      table.title = (" %s " % (self.Header))
             
       for row in TABLE_DATA:
         table.add_row(*row)
         
-      if Style:
+      if self.Style:
         n = 0
-        for style in Style:
+        for style in self.Style:
           table.columns[n].style = style
           n += 1
             
 
-      if Header_Style:
+      if self.Header_Style:
         n = 0
-        for style in Header_Style:
+        for style in self.Header_Style:
           table.columns[n].header_style = style
           n += 1
         
-class Tables(object):
-  def __init__(self, Variable):
+  def Tables(self):
     TABLE_DATA = [
     [
         " 00> 选择 工程",
@@ -63,7 +69,7 @@ class Tables(object):
     ],
     [
        " 02> 分解 bin",
-       " 03> 打包 img",
+       " 03> 打包 bro",
     ],
     [
        " 04> 分解 bro",
@@ -71,7 +77,7 @@ class Tables(object):
     ],
     [
        " 06> 分解 dat",
-       " 07> 打包 bro",
+       " 07> 打包 img",
     ],
     [
        " 08> 分解 img",
@@ -98,7 +104,7 @@ class Tables(object):
     
       table.add_column(" 打包", justify="center", no_wrap=True)
     
-      table.title = (" 工程名称 > %s " % (Variable.rsplit('/', 1)[1]))
+      table.title = (" 工程名称 > %s " % (self.Variable.rsplit('/', 1)[1]))
     
       for row in TABLE_DATA:
         table.add_row(*row)

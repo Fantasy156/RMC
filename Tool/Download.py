@@ -1,57 +1,103 @@
-#!/usr/bin/env python3
-# -*-coding:utf-8-*-
-import requests
-from rich.progress import (
-    BarColumn,
-    DownloadColumn,
-    Progress,
-    TaskID,
-    TextColumn,
-    TimeRemainingColumn,
-    TransferSpeedColumn,
-)
-
-from Tool import Path, Console, sleep
+from pathlib import Path
+from threading import Thread, active_count
+from requests import get, head, exceptions, Session
 from Tool.Utility import Mkdir
+from Tool import Console, sleep
 
-class download(object):
-  def __new__(self, Directory, Url):
-    console = Console()
-    Mkdir(Directory)
-   # if not Except(Url).Url()[0]:
-      #return console.print(Except(Url).Url()[1], style="bold red"), Tool.time.sleep(1)    
-    Url_size = int(requests.get(url=Url, stream=True).headers['Content-Length'])
-    Url_file = Path(Url).name
-    Res = Path(str(Directory) + '/' + Url_file)
+from rich.progress import (
+  BarColumn,
+  DownloadColumn,
+  Progress,
+  TaskID,
+  TextColumn,
+  TimeRemainingColumn,
+  TransferSpeedColumn,
+  )
+
+console = Console()
+
+progress = Progress(
+  TextColumn("[bold spring_green3]{task.fields[filename]}", justify="right"),
+  BarColumn(bar_width=None),
+  "[progress.percentage]{task.percentage:>0.1f}%",
+  "•",
+  DownloadColumn(),
+  "•",
+  TransferSpeedColumn(),
+  "·",
+  TimeRemainingColumn(),
+  )
+
+
+class downloader(object):
+  def __init__(self, Directory, url):
+    self.url = url
+    self.num = 12
+    self.name = Path(url).name
+    self.Directory = Directory
+    self.file = Directory + "/" + str(Path(url).name)
+    self.getsize = 0
+    self.curr = 0
+    r = head(self.url, allow_redirects=True)
+    self.size = int(r.headers['Content-Length'])
+    self.chunk_size = 1024000
+    self.one = True
+    self.AAK = []
+    self.s = Session()
+
+  def down(self, start, end):
+    headers = {'range': f'bytes={start}-{end}'}
+    try:
+      r = self.s.get(self.url, headers=headers, stream=True, timeout=15)
+      with open(self.file, 'wb') as f:
+        f.seek(start)
+        for chunk in r.iter_content(self.chunk_size):
+          f.write(chunk)
+          f.flush()
+          self.getsize += len(chunk)
+          start += len(chunk)
+    except Exception:
+      return self.AAK.append((start, end))
+
+  def Multithreading(self):
+    if self.one:
+      start = 0
+      for i in range(self.num):
+        end = int((i+1)/self.num*self.size)
+        t = Thread(target=self.down, args=(start, end))
+        t.start()
+        start = end + 1
+    elif self.AAK:
+      for size in self.AAK:
+        start = size[0] + 1
+        end = size[1]
+        t = Thread(target=self.down, args=(start, end))
+        t.start()
+        self.AAK.remove(size)
+
+  def main(self):
+    console.clear()
+    Mkdir(self.Directory)
+    Res = Path(self.file)
     if Res.is_file():
       size = int(Res.stat().st_size)
-      if Url_size != size:
+      if size != self.size:
         Path.unlink(Res)
       else:
-        return console.print("文件已存在", style="bold red"), sleep(1)
-        
-    
-    progress = Progress(
-    TextColumn("[bold spring_green3]{task.fields[filename]}", justify="right"),
-    BarColumn(bar_width=None),
-    "[progress.percentage]{task.percentage:>3.0f}%",
-    "•",
-    DownloadColumn(),
-    "•",
-    TransferSpeedColumn(),
-    "·",
-    TimeRemainingColumn(),
-    )
-    
-    console.clear()
+        console.print("文件已存在", style="bold red"), sleep(1)
+        return self.file
+    self.Multithreading()
+    self.one = False
     console.print("正在下载固件 :\n", style="medium_spring_green")
     with progress:
-      r = requests.get(Url, stream=True)
-      task_id = progress.add_task("download", filename=Url_file, start=False)
-      progress.update(task_id, total=Url_size)
-      with open(str(Res), "wb") as dest_file:
+      task_id = progress.add_task("download", filename=self.name, start=False)
+      progress.update(task_id, total=self.size)
+      while True:
+        self.Multithreading()
         progress.start_task(task_id)
-        for data in r.iter_content(chunk_size=1024):
-          dest_file.write(data)
-          progress.update(task_id, advance=len(data))
-          
+        down = self.getsize - self.curr
+        progress.update(task_id, advance=down)
+        self.curr += down
+        if self.curr == self.size:
+          break
+      return self.file

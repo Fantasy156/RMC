@@ -2,47 +2,44 @@ import tarfile
 from zipfile import ZipFile
 from Tool import Path, Console, sleep, shutil
 
+console = Console()
+
 class Find(object):
-  def __new__(self, ZIP, Ziplist=None):
+  def __init__(self, ZIP, Ziplist=None):
+    self.zip = ZIP
+    self.ziplist = Ziplist
+  def file(self):
     try :
-      z = ZipFile(ZIP, 'r')
-      for filename in z.namelist():
-        for i in Ziplist:
+      zip = ZipFile(self.zip, 'r')
+      for filename in zip.namelist():
+        for i in self.ziplist:
           if filename == i:
-            return ZIP.stem
+            return str(self.zip.stem)
     except Exception as e :
       pass
           
-class Unzip(object):
-  def __init__(self, Directory, Files, Password=None):
-    console = Console()
-    if Path(Directory).is_dir():
-      shutil.rmtree(Directory)
-    result = Path(Directory).mkdir(parents=True, exist_ok=True)
+class Zip(object):
+  def __init__(self, Directory, Files):
+    self.Directory = Directory
+    self.Files = Files
+  def Unzip(self):
+    if Path(self.Directory).is_dir():
+      shutil.rmtree(self.Directory)
+    result = Path(self.Directory).mkdir(parents=True, exist_ok=True)
      
-    if 'tar' == Files.rsplit('.', 2)[1] or Files.endswith('.tgz') or Files.endswith('.tar'):
+    if 'tar' == self.Files.rsplit('.', 2)[1] or self.Files.endswith('.tgz') or self.Files.endswith('./'):
       try :
-        tar = tarfile.open(Files)  
-        names = tar.getnames()   
-        for name in names:  
-          tar.extract(name, Directory)  
-        tar.close()
+        with tarfile.open(self.Files) as tar:
+          tar.extract(self.Directory)
       except Exception as e :
-        print(e), sleep(0.5)
+        console.print(e, style="bold red"), sleep(0.5)
             
-    elif Files.endswith('.zip'):
+    elif self.Files.endswith('.zip'):
       try:
-        zip_file = ZipFile(Files)  
-        for names in zip_file.namelist():  
-          zip_file.extract(names, Directory)  
-        zip_file.close()  
+        with ZipFile(self.Files, mode="r") as zip:
+          zip.extractall(self.Directory)
       except Exception as e:
-        if 'password required for extraction' in str(e):
-          print("加密文件请输入密码")
-          Password = input()
-          Unzip(Directory, Files, Password=None)
-        else:
-          print(e), sleep(0.5)
+        console.print(e, style="bold red"), sleep(0.5)
 
     else:
       console.print("文件格式不支持或者不是压缩文件", style="bold red")

@@ -70,7 +70,7 @@ try:
       elif int(len(list)) >= int(select):
         Plug = Directory_Path(str(Path.cwd()) + '/Sub' + "/" + str(list[int(select) - 1]), "*", Files=['run.sh', 'run.py']).list()[0]
         Path(Plug).chmod(0o777)
-        subprocess.run([str(Plug) + ' ' + str(PROJECT)], shell=True)
+        subprocess.run([str(Plug) + ' ' + str(PROJECT)], shell=True), sleep(2)
       else:
         console.print("\n 没有此选项\n", style="bold red"), sleep(0.5)
     
@@ -245,3 +245,6 @@ try:
 except KeyboardInterrupt:
   console.print("\n用户强制退出", style="bold red")
   Bye()
+except Exception as e:
+  console.print(e, style="bold red")
+  input()

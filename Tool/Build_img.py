@@ -155,23 +155,23 @@ class Build(object):
 
 
 
-    Sparse = self.img_file + 's'
-    sparse = subprocess.run(['img2simg ' + self.img_file + ' ' + Sparse],shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    if not sparse.stderr.decode():
-      Path(Sparse).rename(self.img_file)
-      self.Dynamic()
+      Sparse = self.img_file + 's'
+      sparse = subprocess.run(['img2simg ' + self.img_file + ' ' + Sparse],shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+      if not sparse.stderr.decode():
+        Path(Sparse).rename(self.img_file)
+        self.Dynamic()
 
 
 
-  elif '__populate_fs:' in p.stderr.decode():
-    print(p.stderr.decode())
-    Path.unlink(Path(self.img_file))
-    print('\033[1;31m[%s] 生成的 %s 空间不够大\033[0m\n' % (strftime('%H:%M:%S',localtime()), self.img_file))
-    input('按任意键继续 ')
-      
-  elif p.stderr.decode():
-    print('\033[1;31m[%s] 其他错误!\n%s\033[0m\n' % (strftime('%H:%M:%S',localtime()), p.stderr.decode().split('\n')[-2]))
-    input('按任意键继续 ')
+      elif '__populate_fs:' in p.stderr.decode():
+        print(p.stderr.decode())
+        Path.unlink(Path(self.img_file))
+        print('\033[1;31m[%s] 生成的 %s 空间不够大\033[0m\n' % (strftime('%H:%M:%S',localtime()), self.img_file))
+        input('按任意键继续 ')
+          
+      elif p.stderr.decode():
+        print('\033[1;31m[%s] 其他错误!\n%s\033[0m\n' % (strftime('%H:%M:%S',localtime()), p.stderr.decode().split('\n')[-2]))
+        input('按任意键继续 ')
 
       
       # ext4fs Generate empty image

@@ -16,21 +16,22 @@ class tabulation(object):
     self.Options = Options
     self.Style = Style
     self.Header_Style = Header_Style
+    self.TABLE_DATA = []
   def Tablel(self):
     if self.Other:
-      TABLE_DATA = [[" 0", "%s" % (self.Other), ]]
+      self.TABLE_DATA = [[" 0", "%s" % (self.Other), ]]
    
     n = 1
     for list in self.Variable:
       Row = [" %s" % (str(n)), list, ]
-      TABLE_DATA.append([" ",])
-      TABLE_DATA.append(Row)
+      self.TABLE_DATA.append([" ",])
+      self.TABLE_DATA.append(Row)
       n += 1
     
-    TABLE_DATA.append([" ",])
+    self.TABLE_DATA.append([" ",])
     
     if self.Options:
-      TABLE_DATA.append(self.Options)
+      self.TABLE_DATA.append(self.Options)
       
     table = Table(show_footer=False)
     table_centered = Align.center(table)
@@ -45,7 +46,7 @@ class tabulation(object):
     
       table.title = (" %s " % (self.Header))
             
-      for row in TABLE_DATA:
+      for row in self.TABLE_DATA:
         table.add_row(*row)
         
       if self.Style:
@@ -62,7 +63,7 @@ class tabulation(object):
           n += 1
         
   def Tables(self):
-    TABLE_DATA = [
+    self.TABLE_DATA = [
     [
         " 00> 选择 工程",
         " 01> 插件 sub",
@@ -106,7 +107,7 @@ class tabulation(object):
     
       table.title = (" 工程名称 > %s " % (self.Variable.rsplit('/', 1)[1]))
     
-      for row in TABLE_DATA:
+      for row in self.TABLE_DATA:
         table.add_row(*row)
     
       table.columns[0].style = "bright_cyan"

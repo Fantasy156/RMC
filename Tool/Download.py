@@ -2,7 +2,7 @@ from pathlib import Path
 from threading import Thread, active_count
 from requests import get, head, exceptions, Session
 from Tool.Utility import Mkdir
-from Tool import Console, sleep
+from Tool import Console, sleep, ConfigParser
 
 from rich.progress import (
   BarColumn,
@@ -15,6 +15,8 @@ from rich.progress import (
   )
 
 console = Console()
+cfp = ConfigParser()
+cfp.read("Sub/config")
 
 progress = Progress(
   TextColumn("[bold spring_green3]{task.fields[filename]}", justify="right"),
@@ -32,7 +34,7 @@ progress = Progress(
 class downloader(object):
   def __init__(self, Directory, url):
     self.url = url
-    self.num = 12
+    self.num = cfp.get("download","Thread")
     self.name = Path(url).name
     self.Directory = Directory
     self.file = Directory + "/" + str(Path(url).name)

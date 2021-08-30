@@ -889,3 +889,4 @@ class Task(object):
       self.Unpack()
     elif self.task == 'Pack':
       self.Pack()
+      input('按任意键继续: ')

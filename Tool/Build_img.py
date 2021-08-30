@@ -1,4 +1,4 @@
-import subprocess, platform, magic
+import subprocess, platform
 from Tool import Path
 from Tool.Utility import Delete
 
@@ -19,15 +19,15 @@ class Build(object):
     if self.name == 'odm':
       self.size = int(Path(str(self.dir) + '/config/' + str(Path(self.name).name) + '_size.txt').open().read())
     elif self.name == 'product':
-      self.size = 26 * 1024 * 1024
+      self.size = 24 * 1024 * 1024
     elif self.name == 'system':
-      self.size = 150 * 1024 * 1024
+      self.size = 128 * 1024 * 1024
     elif self.name == 'vendor':
       self.size = 16 * 1024 * 1024
     elif self.name == 'system_ext':
       self.size = 16 * 1024 * 1024
     else:
-      self.size = 20 * 1024 * 1024
+      self.size = 28 * 1024 * 1024
     if self.name != 'odm':
       for file in Path(self.file).glob('**/*'):
         if file.is_symlink():
@@ -112,27 +112,28 @@ class Build(object):
       self.make_ext4fs = str(self.Binary) + '/Make/aarch64/make_ext4fs'
 
 
-  def Dynamic(self)
+  def Dynamic(self):
     size = open(self.dir + '/config/' + str(Path(self.name).name) + '_size.txt').read()
-    sz = 200 * 1024 * 1024
-    new_size_1 = str(self.size + sz)
+    sz = 10 * 1024 * 1024
+    new_size = str(int(size) + sz)
     old_file = str(self.dir) + '/dynamic_partitions_op_list'
     new_file = str(self.dir) + '/new_dynamic_partitions_op_list'
-    old_str_1 = '# Grow partition ' + self.name + ' from 0 to ' + size
-    old_str_2 = 'resize ' + self.name + ' ' + size
-    file_data = ''
+    old_str_1 = '# Grow partition ' + self.name + ' from 0 to' + size
+    old_str_2 = 'resize ' + self.name
+    aaa = False
+    file_data=''
 
 
     with open(new_file, 'w', encoding='utf-8') as file:
       for line in open(old_file, 'r').readlines():
-        if old_str_1 == line:
-          lines = '# Grow partition ' + self.name + ' from 0 to ' + str(self.size) +'\n'
-        elif old_str_2 == line:
-          lines = 'resize ' + self.name + ' ' + new_size_1 +'\n'
+        if old_str_2 in line:
+          lines = 'resize ' + self.name + ' ' + new_size +'\n'
+        elif aaa:
+          if old_str_1 in line:
+            lines = '# Grow partition ' + self.name + ' from 0 to ' + str(self.size) +'\n'
         else:
           lines = line
-        file_data += line
-      file.write(file_data)
+        file.write(lines)
       Path(new_file).rename(old_file)
 
     Delete([self.ConfigName, self.ContextsName])
@@ -154,24 +155,23 @@ class Build(object):
 
 
 
-      if 'sparse' not in magic.from_file(self.img_file):
-        Sparse = self.img_file + 's'
-        sparse = subprocess.run(['img2simg ' + self.img_file + ' ' + Sparse],shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        if not sparse.stderr.decode():
-          Path(Sparse).rename(self.img_file)
-          self.Dynamic()
+    Sparse = self.img_file + 's'
+    sparse = subprocess.run(['img2simg ' + self.img_file + ' ' + Sparse],shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    if not sparse.stderr.decode():
+      Path(Sparse).rename(self.img_file)
+      self.Dynamic()
 
 
 
-      elif '__populate_fs:' in p.stderr.decode():
-        print(p.stderr.decode())
-        Path.unlink(Path(self.img_file))
-        print('\033[1;31m[%s] 生成的 %s 空间不够大\033[0m\n' % (strftime('%H:%M:%S',localtime()), self.img_file))
-        input('按任意键继续 ')
-          
-      elif p.stderr.decode():
-        print('\033[1;31m[%s] 其他错误!\n%s\033[0m\n' % (strftime('%H:%M:%S',localtime()), p.stderr.decode().split('\n')[-2]))
-        input('按任意键继续 ')
+  elif '__populate_fs:' in p.stderr.decode():
+    print(p.stderr.decode())
+    Path.unlink(Path(self.img_file))
+    print('\033[1;31m[%s] 生成的 %s 空间不够大\033[0m\n' % (strftime('%H:%M:%S',localtime()), self.img_file))
+    input('按任意键继续 ')
+      
+  elif p.stderr.decode():
+    print('\033[1;31m[%s] 其他错误!\n%s\033[0m\n' % (strftime('%H:%M:%S',localtime()), p.stderr.decode().split('\n')[-2]))
+    input('按任意键继续 ')
 
       
       # ext4fs Generate empty image

@@ -1,0 +1,12 @@
+[aarch64]
+#RAM处理器 下载目录(ROM目录)
+Down = **/sdcard/download
+
+
+[x86_64]
+#PC版 下载目录(ROM目录)
+Down = download
+
+[download]
+#下载器线程
+Thread = 12

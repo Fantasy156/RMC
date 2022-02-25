@@ -1,12 +1,11 @@
 import brotli, os, struct, traceback, re, mmap, string, tempfile
 from Tool import Console, partial, Path, strftime, localtime, shutil, ext4, blockimgdiff, sparse_img
-from Tool.Utility import Delete, Directory_Path, Mkdir
+from Tool.Utility import Delete, Directory_Path
 from Tool.Build_img import Build
-from rich.progress import (
+from local.rich import (
   BarColumn,
   DownloadColumn,
   Progress,
-  TaskID,
   TextColumn,
   TimeRemainingColumn,
   TransferSpeedColumn,

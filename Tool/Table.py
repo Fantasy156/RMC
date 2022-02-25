@@ -1,8 +1,8 @@
 """Same as the table_movie.py but uses Live to update"""
-from rich.align import Align
-from rich.live import Live
-from rich.table import Table
-from rich import box
+from local.rich import Align
+from local.rich import Live
+from local.rich import Table
+from local.rich import box
 
 from Tool import Console
 

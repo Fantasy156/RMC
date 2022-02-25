@@ -1,0 +1,6 @@
+{
+  "PC_BIN": "X86_64",
+  "AARCH64_BIN": "aarch64",
+  "FILE_DIR": "",
+  "THREAD": "64"
+}

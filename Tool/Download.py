@@ -1,14 +1,13 @@
 from pathlib import Path
-from threading import Thread, active_count
-from requests import get, head, exceptions, Session
+from threading import Thread
+from requests import head, Session
 from Tool.Utility import Mkdir
 from Tool import Console, sleep, ConfigParser
 
-from rich.progress import (
+from local.rich.progress import (
   BarColumn,
   DownloadColumn,
   Progress,
-  TaskID,
   TextColumn,
   TimeRemainingColumn,
   TransferSpeedColumn,
@@ -92,7 +91,7 @@ class downloader(object):
     self.one = False
     console.print("正在下载固件 :\n", style="medium_spring_green")
     with progress:
-      task_id = progress.add_task("download", filename=self.name, start=False)
+      task_id = progress.add_task("download", start=False)
       progress.update(task_id, total=self.size)
       while True:
         self.Multithreading()

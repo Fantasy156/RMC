@@ -1,24 +1,18 @@
-from getpass import getuser
-from pathlib import Path
-from local.config import config
+from local.core import inputs
 from local.dwonload import download
+from local.utlity import download_dir
+from local.utlity import table
 
 
 def run(target):
-    file_dir = download_dir(target)
-    url = input('')
-    download(url, file_dir)
+    data = ['新建工程']
+    styles = ['bright_cyan', 'bright_magenta']
+    table(variable=data, header='RMC 解包工具', styles=styles)
 
-def download_dir(target):
-    file_dir = ''
-    if target == 'PC':
-        directory = f'/home/{getuser()}/下载'
-        file_dir = directory if Path(directory).is_dir() else f'/home/{getuser()}/download'
-        if config.FILE_DIR:
-            file_dir = f'/home/{getuser()}/{config.FILE_DIR}'
-            Path(file_dir).mkdir()
+    data = ['选择', '删除', '下载', '退出']
+    number = [33, 44, 66, 88]
+    styles = ['bright_cyan', 'bright_magenta']
+    table(variable=data, styles=styles, number=number, num=len(data))
 
-    elif target == 'AARCH64':
-        pass
-
-    return file_dir
+    url = inputs('输入链接')
+    download(url, download_dir(target))

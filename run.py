@@ -1,17 +1,22 @@
 from platform import machine, python_version
-from sys import exit
+
 from local.main import run
 
 if python_version() < '3.10':
-    exit('需要python版本大于或等于3.10')
+    raise ValueError("Python Version more than the 3.10")
 
-if machine() == 'x86_64':
-    target = 'PC'
-    run(target)
 
-elif machine() == 'aarch64' or machine() in 'arm*':
-    target = 'AARCH64'
-    run(target)
+def cpu():
+    match machine():
+        case 'x86_64':
+            return 'PC'
 
-else:
-    exit(f'暂不支持 {machine()}')
+        case 'aarch64' | 'arm*':
+            return 'AARCH64'
+
+        case _:
+            raise LookupError(f'Not Support {machine()}')
+
+
+run(cpu())
+

@@ -5,7 +5,8 @@ CONFIG_DICT = {
     'PC_BIN': 'PC_BIN',
     'AARCH64_BIN': 'AARCH64_BIN',
     'FILE_DIR': 'FILE_DIR',
-    'THREAD': 'THREAD'
+    'THREAD': 'THREAD',
+    'PROJECT_DIR': 'PROJECT_DIR'
 }
 
 

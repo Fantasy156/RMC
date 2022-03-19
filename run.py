@@ -1,3 +1,4 @@
+from itertools import repeat
 from platform import machine, python_version
 
 from local.main import run
@@ -18,5 +19,5 @@ def cpu():
             raise LookupError(f'Not Support {machine()}')
 
 
-run(cpu())
-
+for _ in repeat((None,)):
+    run(cpu())

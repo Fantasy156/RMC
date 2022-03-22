@@ -1,9 +1,9 @@
 from pathlib import Path
 from local.config import config
 from local.rich.console import Console
-from threading import Thread
+from threading import Thread, Lock
 from requests import head, Session, exceptions
-from requests.adapters import HTTPAdapter
+import gc
 
 from local.rich.progress import (
     BarColumn,
@@ -34,119 +34,135 @@ progress = Progress(
 
 class Download(object):
     def __init__(self):
-        self.AAK = None
-        self.getsize = 0
         self.chunk_size = 1024000
-        self.num = int(config.THREAD) if config.THREAD else 64
-
-    @staticmethod
-    def _name(url):
-        return Path(url).name
+        self.quick_ = []
+        self.lock = Lock()
+        self.num = int(config.THREAD) if config.THREAD else 1
 
     @staticmethod
     def _size(url):
         return head(url, allow_redirects=True).headers['Content-Length']
 
-    @staticmethod
-    def _file(file_dir, name) -> str:
-        return f'{file_dir}/{name}'
-
     def __update__(self, url, file_dir):
-        return self._name(url), self._file(file_dir, self._name(url)), int(self._size(url))
+        return Path(url).name, f'{file_dir}/{Path(url).name}', int(self._size(url))
 
     @staticmethod
-    def __dict(start, end):
-        return {'start': start, 'end': end}
+    def __dict(start, end, tag):
+        return {'start': start, 'end': end, 'tag': tag}
 
     @staticmethod
-    def _dict(value: dict):
-        return value['start'], value['end']
+    def dict(value, tag):
+        return value[tag]
 
     @staticmethod
-    def _step(end, chunk) -> int:
-        return end // chunk
+    def revise_quick(quick, key, value):
+        quick[key] = value
 
-    def block(self, start=0, end=0, chunk=0):
-        rec = list(range(start, end, self._step(end, chunk)))
-        rec[-1] = end + 1
-        return rec
+    @staticmethod
+    def quick_size(size, num):
+        return size // num
 
-    def __block__(self, arr: list):
+    def quick_start(self, i, end):
+        return i * self.quick_size(end, self.num)
+
+    def quick_end(self, i, end):
+        return end if (i + 1) == self.num \
+            else (i + 1) * self.quick_size(end, self.num) - 1
+
+    def quick(self, end):
         return {
-            i: self.__dict(start=arr[i], end=arr[i+1]-1)
-            for i in range(len(arr)-1)
-            }
+            i: self.__dict(start=self.quick_start(i, end),
+                           end=self.quick_end(i, end),
+                           tag=True)
+            for i in range(self.num)
+        }
+
+    def quick_list(self):
+        return [i for i in range(self.num)
+                if self.dict(self.quick_[i], 'tag') and
+                not self.judge(self.dict(self.quick_[i], 'start'),
+                               self.dict(self.quick_[i], 'end'))]
+
+    def update_progress(self, initial, quick):
+        return sum(self.get_quick(quick, 'start')) - initial, sum(self.get_quick(quick, 'start'))
+
+    def get_quick(self, quick, tag):
+        return [self.dict(quick[i], tag) for i in range(self.num)]
 
     @staticmethod
     def _headers(start, end) -> dict:
         return {'range': f'bytes={start}-{end}'}
 
+    def thread_list(self, url, file, quick, quick_list=()):
+        return [
+            Thread(target=self.download,
+                   args=(i, url, file, self.dict(quick[i], 'start'), self.dict(quick[i], 'end')))
+            for i in quick_list
+        ]
+
     @staticmethod
-    def _write(file, start, chunk):
-        with open(file, 'rb+') as f:
-            f.seek(start)
-            f.write(chunk)
+    def judge(start, end):
+        return False if start < end else True
 
-    def __size(self, chunk):
-        return chunk if chunk < self.chunk_size else self.chunk_size
+    @staticmethod
+    def path(file):
+        return Path(file).stat().st_size if Path(file).is_file() else False
 
-    def _session(self, url, start, end):
-        r = Session()
-        retry = HTTPAdapter(max_retries=3)
-        r.mount('http://', retry)
-        r.mount('https://', retry)
-        return r.get(url, headers=self._headers(start=start, end=end), stream=True, timeout=15)
+    def verify_file(self, file, size):
+        return True if self.path(file) == size else False
 
-    def download(self, url, file, start, end):
-        for i in range(self._step(end=end - start, chunk=self.chunk_size) + 1):
-            size = self.__size(chunk=start)
-            try:
-                for chunk in self._session(url, start, end).iter_content(size):
-                    self._write(file, start, chunk)
-                    start += len(chunk)
-                    self.getsize += len(chunk)
-            except exceptions.ConnectionError:
-                pass
+    def verify(self):
+        for i in range(self.num):
+            if not self.judge(self.dict(self.quick_[i], 'start'), self.dict(self.quick_[i], 'end')):
+                return False
+        return True
 
-    def multithreading(self, url, file, num: int, block):
-        for i in range(num):
-            try:
-                start, end = self._dict(block[i])
-            except KeyError:
-                start, end = self._dict(block)
-            t = Thread(target=self.download, args=(url, file, start, end))
+    @staticmethod
+    def thread(thread_list):
+        for t in thread_list:
             t.start()
+
+    def download(self, i, url, file, start, end):
+        self.revise_quick(self.quick_[i], key='tag', value=False)
+        headers = {'range': f'bytes={start}-{end}'}
+        try:
+            r = Session().get(url, headers=headers, stream=True)
+            for chunk in r.iter_content(self.chunk_size):
+                self.lock.acquire()
+                file.seek(start)
+                file.write(chunk)
+                start += len(chunk)
+                self.revise_quick(self.quick_[i], key='start', value=start)
+                self.lock.release()
+        except exceptions.ProxyError:
+            pass
+        if start < end:
+            self.revise_quick(self.quick_[i], key='tag', value=True)
 
     def main(self, url, file_dir):
         console.clear()
         name, file, size = self.__update__(url, file_dir)
-        block = self.__block__(self.block(end=size, chunk=self.num))
-        if Path(file).is_file():
-            old_size = int(Path(file).stat().st_size)
-            if old_size != size:
-                Path.unlink(Path(file))
-            else:
-                return file
-        f = open(file, 'wb')
-        f.close()
-        self.multithreading(url, file, self.num, block)
-        curr = 0
-        console.print(f"正在下载固件 :\n  FILE_NAME: {name}\n  DOWNLOAD_DIR: {file_dir}\n",
-                      style="medium_spring_green")
-        with progress:
-            task_id = progress.add_task("download", name='  ',  start=False)
-            progress.update(task_id, total=size)
-            while True:
-                if self.AAK:
-                    self.multithreading(url, file, 1, block=self.AAK)
-                    self.AAK = None
-                progress.start_task(task_id)
-                down = self.getsize - curr
-                progress.update(task_id, advance=down)
-                curr += down
-                if curr == size:
-                    break
+        if self.verify_file(file, size):
             return file
+        self.quick_ = self.quick(size)
+        initial = sum(self.get_quick(self.quick_, 'start'))
+        with open(file, 'wb') as f:
+            console.print(f"正在下载固件 :\n  FILE_NAME: {name}\n  DOWNLOAD_DIR: {file_dir}\n",
+                          style="medium_spring_green")
+            with progress:
+                task_id = progress.add_task("download", name=' ', start=False)
+                progress.start_task(task_id)
+                progress.update(task_id, total=size)
+                while True:
+                    thread_list = self.thread_list(url, f, self.quick_, self.quick_list())
+                    self.thread(thread_list)
+                    curr, initial = self.update_progress(initial, self.quick_)
+                    console.print('', end='\r')
+                    progress.update(task_id, advance=curr)
+                    if self.verify():
+                        break
+        return file if self.verify_file(file, size) else False
+
 
 # https://hugeota.d.miui.com/22.2.22/miui_GAUGUINPRE_22.2.22_00696d7234_12.0.zip
 
